@@ -1,0 +1,62 @@
+# =====================================================
+# CONFIGURAÇÃO APACHE PARA API PHP
+# =====================================================
+
+# Habilitar rewrite engine
+RewriteEngine On
+
+# Forçar HTTPS (descomente se usar SSL)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Bloquear acesso a arquivos sensíveis
+<FilesMatch "^(config\.php|\.htaccess|\.env)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Bloquear acesso à pasta core
+<IfModule mod_rewrite.c>
+    RewriteRule ^core/ - [F,L]
+</IfModule>
+
+# Headers de segurança
+<IfModule mod_headers.c>
+    # Prevenir XSS
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Prevenir MIME sniffing
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Clickjacking protection
+    Header set X-Frame-Options "DENY"
+    
+    # Referrer Policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Desabilitar listagem de diretórios
+Options -Indexes
+
+# Charset padrão
+AddDefaultCharset UTF-8
+
+# Compressão GZIP
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+</IfModule>
+
+# Cache control para APIs
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType application/json "access plus 0 seconds"
+</IfModule>
+
+# Aumentar limite de upload se necessário
+# php_value upload_max_filesize 10M
+# php_value post_max_size 10M
+
+# Timeout
+# php_value max_execution_time 30
